@@ -6,6 +6,7 @@ use App\Models\Game;
 use App\Models\Platform;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class GameController extends Controller
 {
@@ -113,5 +114,32 @@ class GameController extends Controller
         $game->forceDelete();
 
         return redirect()->route('games.trash')->with('success', 'Game permanently deleted.');
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->query('search');
+        $platform_id = $request->query('platform_id');
+
+        $query = Game::with('platform')
+            ->when($search, function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%");
+            })
+            ->when($platform_id, function ($q) use ($platform_id) {
+                $q->where('platform_id', $platform_id);
+            })
+            ->latest();
+
+        $games = $query->get();
+
+        $filename = 'games_' . now()->format('Ymd_His') . '.pdf';
+
+        $pdf = PDF::loadView('games.pdf', [
+            'games' => $games,
+            'search' => $search,
+            'platform_id' => $platform_id,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download($filename);
     }
 }

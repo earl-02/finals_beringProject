@@ -74,6 +74,13 @@
             </select>
 
             <button type="submit" class="bg-blue-600 text-white px-3 py-2 rounded">Filter</button>
+
+            @php
+                $query = request()->query();
+                $exportUrl = route('games.export') . (count($query) ? ('?' . http_build_query($query)) : '');
+            @endphp
+
+            <a href="{{ $exportUrl }}" class="px-3 py-2 bg-indigo-600 text-white rounded" target="_blank" rel="noopener">Export to PDF</a>
             <a href="{{ route('games.index') }}" class="px-3 py-2 bg-gray-200 rounded">Clear Filters</a>
         </form>
 
@@ -83,7 +90,7 @@
                     <th class="py-2">Title</th>
                     <th>Year</th>
                     <th>Platform</th>
-                    <th>Price</th>
+                    <th>Money spent</th>
                     <th></th>
                 </tr>
             </thead>
@@ -139,7 +146,7 @@
                 <input id="e_release_year" name="release_year" class="w-full border p-2 rounded" />
             </div>
             <div class="mb-2">
-                <label class="block text-sm">Price</label>
+                <label class="block text-sm">Money Spent</label>
                 <input id="e_price" name="price" class="w-full border p-2 rounded" />
             </div>
             <div class="mb-4">

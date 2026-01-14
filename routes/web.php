@@ -29,6 +29,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/games/trash', [GameController::class, 'trash'])->name('games.trash');
     Route::post('/games/{id}/restore', [GameController::class, 'restore'])->name('games.restore');
     Route::delete('/games/{id}/force-delete', [GameController::class, 'forceDelete'])->name('games.forceDelete');
+
+    // Export filtered games to PDF
+    Route::get('/games/export', [GameController::class, 'export'])->name('games.export');
 });
 
 require __DIR__.'/settings.php';
