@@ -15,8 +15,9 @@
         </div>
 
         <nav class="space-y-2">
-            <a href="{{ route('games.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('games.*') ? 'bg-blue-100' : '' }}">Games</a>
+            <a href="{{ route('games.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('games.*') && !request()->routeIs('games.trash') ? 'bg-blue-100' : '' }}">Games</a>
             <a href="{{ route('platforms.index') }}" class="block px-3 py-2 rounded {{ request()->routeIs('platforms.*') ? 'bg-blue-100' : '' }}">Platforms</a>
+            <a href="{{ route('games.trash') }}" class="block px-3 py-2 rounded {{ request()->routeIs('games.trash') ? 'bg-blue-100' : '' }}">Trash</a>
         </nav>
 
         <div class="mt-auto pt-6 border-t mt-6">

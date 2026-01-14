@@ -79,8 +79,39 @@ class GameController extends Controller
 
     public function destroy(Game $game)
     {
+        // soft delete (Game model uses SoftDeletes)
         $game->delete();
 
         return redirect()->back()->with('success', 'Game deleted.');
+    }
+
+    // list trashed games
+    public function trash(Request $request)
+    {
+        $trashed = Game::onlyTrashed()->with('platform')->latest()->paginate(20)->withQueryString();
+        return view('games.trash', compact('trashed'));
+    }
+
+    // restore soft deleted game
+    public function restore($id)
+    {
+        $game = Game::withTrashed()->findOrFail($id);
+        $game->restore();
+
+        return redirect()->route('games.trash')->with('success', 'Game restored.');
+    }
+
+    // permanently delete (forceDelete) — also remove photo file if exists
+    public function forceDelete($id)
+    {
+        $game = Game::withTrashed()->findOrFail($id);
+
+        if ($game->photo && Storage::disk('public')->exists($game->photo)) {
+            Storage::disk('public')->delete($game->photo);
+        }
+
+        $game->forceDelete();
+
+        return redirect()->route('games.trash')->with('success', 'Game permanently deleted.');
     }
 }
