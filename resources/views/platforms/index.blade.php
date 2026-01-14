@@ -22,7 +22,14 @@
     <div class="bg-white p-4 rounded shadow">
         <h3 class="font-semibold mb-3">Platforms</h3>
         <table class="w-full text-left">
-            <thead><tr class="border-b"><th class="py-2">Name</th><th>Manufacturer</th><th>Games</th><th></th></tr></thead>
+            <thead>
+                <tr class="border-b">
+                    <th class="py-2">Name</th>
+                    <th>Manufacturer</th>
+                    <th>Games</th>
+                    <th></th>
+                </tr>
+            </thead>
             <tbody>
                 @foreach($platforms as $p)
                     <tr class="border-b">
@@ -48,8 +55,8 @@
 </div>
 
 <!-- Platform Edit Modal -->
-<div id="platformEditModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center">
-    <div class="bg-white p-4 rounded w-full max-w-md">
+<div id="platformEditModal" class="fixed inset-0 z-50 hidden flex items-center justify-center backdrop-blur-sm bg-white/10 transition-opacity duration-300">
+    <div class="bg-white p-4 rounded w-full max-w-md shadow-lg border border-black">
         <h3 class="font-semibold mb-2">Edit Platform</h3>
         <form id="platformEditForm" method="POST">
             @csrf
@@ -72,13 +79,15 @@
 
 <script>
 function openPlatformEdit(id,name,manufacturer){
-    document.getElementById('platformEditModal').classList.remove('hidden');
+    const modal = document.getElementById('platformEditModal');
+    modal.classList.remove('hidden');
     document.getElementById('p_name').value = name;
     document.getElementById('p_manufacturer').value = manufacturer || '';
     document.getElementById('platformEditForm').action = '/platforms/' + id;
 }
 function closePlatformEdit(){
-    document.getElementById('platformEditModal').classList.add('hidden');
+    const modal = document.getElementById('platformEditModal');
+    modal.classList.add('hidden');
 }
 </script>
 @endsection

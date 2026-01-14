@@ -69,7 +69,10 @@
                         <td>{{ $game->platform->name ?? 'N/A' }}</td>
                         <td>₱{{ number_format($game->price,2) }}</td>
                         <td class="text-right">
-                            <button class="mr-2 text-blue-600" onclick="openEdit({{ $game->id }}, '{{ addslashes($game->title) }}', {{ $game->release_year }}, '{{ $game->price }}', {{ $game->platform_id ?? 'null' }})">Edit</button>
+                            <button class="mr-2 text-blue-600"
+                                onclick="openEdit({{ $game->id }}, '{{ addslashes($game->title) }}', {{ $game->release_year }}, '{{ $game->price }}', {{ $game->platform_id ?? 'null' }})">
+                                Edit
+                            </button>
                             <form method="POST" action="{{ route('games.destroy', $game) }}" style="display:inline" onsubmit="return confirm('Delete this game?')">
                                 @csrf @method('DELETE')
                                 <button class="text-red-600">Delete</button>
@@ -86,9 +89,9 @@
     </div>
 </div>
 
-<!-- Edit Modal (simple implementation) -->
-<div id="editModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center">
-    <div class="bg-white p-4 rounded w-full max-w-lg">
+<!-- Edit Modal -->
+<div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center backdrop-blur-sm bg-white/10 transition-opacity duration-300">
+    <div class="bg-white p-4 rounded w-full max-w-lg shadow-lg border border-black">
         <h3 class="font-semibold mb-2">Edit Game</h3>
         <form id="editForm" method="POST">
             @csrf
@@ -124,7 +127,8 @@
 
 <script>
 function openEdit(id,title,year,price,platform_id){
-    document.getElementById('editModal').classList.remove('hidden');
+    const modal = document.getElementById('editModal');
+    modal.classList.remove('hidden');
     document.getElementById('e_title').value = title;
     document.getElementById('e_release_year').value = year;
     document.getElementById('e_price').value = price;
@@ -132,7 +136,8 @@ function openEdit(id,title,year,price,platform_id){
     document.getElementById('editForm').action = '/games/' + id;
 }
 function closeEdit(){
-    document.getElementById('editModal').classList.add('hidden');
+    const modal = document.getElementById('editModal');
+    modal.classList.add('hidden');
 }
 </script>
 @endsection
