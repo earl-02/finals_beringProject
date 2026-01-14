@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Game;
 use App\Models\Platform;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class GameController extends Controller
 {
@@ -39,7 +40,13 @@ class GameController extends Controller
             'release_year' => 'required|integer',
             'price' => 'required|numeric',
             'platform_id' => 'nullable|exists:platforms,id',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('games', 'public');
+            $data['photo'] = $path;
+        }
 
         Game::create($data);
 
@@ -53,7 +60,17 @@ class GameController extends Controller
             'release_year' => 'required|integer',
             'price' => 'required|numeric',
             'platform_id' => 'nullable|exists:platforms,id',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        if ($request->hasFile('photo')) {
+            // delete old photo if exists
+            if ($game->photo && Storage::disk('public')->exists($game->photo)) {
+                Storage::disk('public')->delete($game->photo);
+            }
+            $path = $request->file('photo')->store('games', 'public');
+            $data['photo'] = $path;
+        }
 
         $game->update($data);
 

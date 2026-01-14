@@ -2,24 +2,24 @@
 
 @section('content')
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="p-4 bg-white rounded shadow">
+    <div class="p-4 bg-white rounded shadow border border-gray-200">
         <div class="text-sm text-gray-500">Total Games</div>
         <div class="text-2xl font-bold">{{ $totalGames }}</div>
     </div>
-    <div class="p-4 bg-white rounded shadow">
+    <div class="p-4 bg-white rounded shadow border border-gray-200">
         <div class="text-sm text-gray-500">Total Platforms</div>
         <div class="text-2xl font-bold">{{ $totalPlatforms }}</div>
     </div>
-    <div class="p-4 bg-white rounded shadow">
+    <div class="p-4 bg-white rounded shadow border border-gray-200">
         <div class="text-sm text-gray-500">Total Amount Spent</div>
         <div class="text-2xl font-bold">₱{{ number_format($totalSpent,2) }}</div>
     </div>
 </div>
 
 <div class="grid md:grid-cols-3 gap-6">
-    <div class="md:col-span-1 bg-white p-4 rounded shadow">
+    <div class="md:col-span-1 bg-white p-4 rounded shadow border border-gray-200">
         <h3 class="font-semibold mb-3">Add New Game</h3>
-        <form method="POST" action="{{ route('games.store') }}">
+        <form method="POST" action="{{ route('games.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="mb-2">
                 <label class="block text-sm">Title</label>
@@ -45,11 +45,16 @@
                     @endforeach
                 </select>
             </div>
+            <div class="mb-4">
+                <label class="block text-sm">Photo (JPG/PNG, ≤ 2MB)</label>
+                <input type="file" name="photo" accept="image/png,image/jpeg" class="w-full" />
+                @error('photo') <div class="text-red-600 text-sm">{{ $message }}</div>@enderror
+            </div>
             <button class="bg-blue-600 text-white px-3 py-2 rounded">Add Game</button>
         </form>
     </div>
 
-    <div class="md:col-span-2 bg-white p-4 rounded shadow">
+    <div class="md:col-span-2 bg-white p-4 rounded shadow border border-gray-200">
         <h3 class="font-semibold mb-3">Games</h3>
 
         <!-- Search & Filter -->
@@ -78,22 +83,30 @@
                     <th class="py-2">Title</th>
                     <th>Year</th>
                     <th>Platform</th>
-                    <th>Money spent</th>
+                    <th>Price</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($games as $game)
                     <tr class="border-b">
-                        <td class="py-2">{{ $game->title }}</td>
+                        <td class="py-2 flex items-center gap-3">
+                            @if($game->photo && file_exists(public_path('storage/' . $game->photo)))
+                                <img src="{{ asset('storage/' . $game->photo) }}" alt="{{ $game->title }}" class="w-10 h-10 rounded-full object-cover border border-gray-300">
+                            @else
+                                @php
+                                    $parts = preg_split('/\s+/', $game->title);
+                                    $initials = strtoupper(collect($parts)->filter()->map(fn($w)=>substr($w,0,1))->take(2)->join(''));
+                                @endphp
+                                <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center font-semibold text-gray-700 border border-gray-300">{{ $initials }}</div>
+                            @endif
+                            <div>{{ $game->title }}</div>
+                        </td>
                         <td>{{ $game->release_year }}</td>
                         <td>{{ $game->platform->name ?? 'N/A' }}</td>
                         <td>₱{{ number_format($game->price,2) }}</td>
                         <td class="text-right">
-                            <button class="mr-2 text-blue-600"
-                                onclick="openEdit({{ $game->id }}, '{{ addslashes($game->title) }}', {{ $game->release_year }}, '{{ $game->price }}', {{ $game->platform_id ?? 'null' }})">
-                                Edit
-                            </button>
+                            <button class="mr-2 text-blue-600" onclick="openEdit({{ $game->id }}, '{{ addslashes($game->title) }}', {{ $game->release_year }}, '{{ $game->price }}', {{ $game->platform_id ?? 'null' }})">Edit</button>
                             <form method="POST" action="{{ route('games.destroy', $game) }}" style="display:inline" onsubmit="return confirm('Delete this game?')">
                                 @csrf @method('DELETE')
                                 <button class="text-red-600">Delete</button>
@@ -112,9 +125,9 @@
 
 <!-- Edit Modal -->
 <div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center backdrop-blur-sm bg-white/10 transition-opacity duration-300">
-    <div class="bg-white p-4 rounded w-full max-w-lg shadow-lg border border-black">
+    <div class="bg-white p-4 rounded w-full max-w-lg shadow-lg border border-gray-300">
         <h3 class="font-semibold mb-2">Edit Game</h3>
-        <form id="editForm" method="POST">
+        <form id="editForm" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <div class="mb-2">
@@ -126,7 +139,7 @@
                 <input id="e_release_year" name="release_year" class="w-full border p-2 rounded" />
             </div>
             <div class="mb-2">
-                <label class="block text-sm">Money spent</label>
+                <label class="block text-sm">Price</label>
                 <input id="e_price" name="price" class="w-full border p-2 rounded" />
             </div>
             <div class="mb-4">
@@ -138,6 +151,12 @@
                     @endforeach
                 </select>
             </div>
+
+            <div class="mb-4">
+                <label class="block text-sm">Replace Photo (JPG/PNG, ≤ 2MB)</label>
+                <input type="file" name="photo" accept="image/png,image/jpeg" class="w-full" />
+            </div>
+
             <div class="flex justify-end gap-2">
                 <button type="button" class="px-3 py-2" onclick="closeEdit()">Cancel</button>
                 <button class="bg-blue-600 text-white px-3 py-2 rounded">Update</button>
