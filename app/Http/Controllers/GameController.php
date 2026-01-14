@@ -8,22 +8,28 @@ use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $games = Game::with('platform')->latest()->paginate(20);
-        $platforms = Platform::orderBy('name')->get();
+        $search = $request->query('search');
+        $platform_id = $request->query('platform_id');
 
+        $games = Game::with('platform')
+            ->when($search, function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%");
+            })
+            ->when($platform_id, function ($q) use ($platform_id) {
+                $q->where('platform_id', $platform_id);
+            })
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        $platforms = Platform::orderBy('name')->get();
         $totalGames = Game::count();
         $totalPlatforms = Platform::count();
         $totalSpent = Game::sum('price');
 
-        return view('games.index', compact(
-            'games',
-            'platforms',
-            'totalGames',
-            'totalPlatforms',
-            'totalSpent'
-        ));
+        return view('games.index', compact('games', 'platforms', 'totalGames', 'totalPlatforms', 'totalSpent', 'search', 'platform_id'));
     }
 
     public function store(Request $request)

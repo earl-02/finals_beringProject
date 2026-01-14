@@ -51,6 +51,27 @@
 
     <div class="md:col-span-2 bg-white p-4 rounded shadow">
         <h3 class="font-semibold mb-3">Games</h3>
+
+        <!-- Search & Filter -->
+        <form method="GET" action="{{ route('games.index') }}" class="mb-4 flex flex-wrap gap-2 items-center">
+            <input
+                name="search"
+                value="{{ $search ?? request('search') }}"
+                placeholder="Search title..."
+                class="border p-2 rounded flex-1 min-w-[160px]"
+            />
+
+            <select name="platform_id" class="border p-2 rounded">
+                <option value="">All Platforms</option>
+                @foreach($platforms as $p)
+                    <option value="{{ $p->id }}" @selected((string)($platform_id ?? request('platform_id')) === (string)$p->id)>{{ $p->name }}</option>
+                @endforeach
+            </select>
+
+            <button type="submit" class="bg-blue-600 text-white px-3 py-2 rounded">Filter</button>
+            <a href="{{ route('games.index') }}" class="px-3 py-2 bg-gray-200 rounded">Clear Filters</a>
+        </form>
+
         <table class="w-full text-left">
             <thead>
                 <tr class="border-b">
