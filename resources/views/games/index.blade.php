@@ -47,7 +47,8 @@
             </div>
             <div class="mb-4">
                 <label class="block text-sm">Photo (JPG/PNG, ≤ 2MB)</label>
-                <input type="file" name="photo" accept="image/png,image/jpeg" class="w-full" />
+                <input type="file" name="photo" accept="image/png,image/jpeg" class="w-full" onchange="previewAddImage(event)" />
+                <img id="addPreview" src="" alt="Preview" class="mt-2 w-20 h-20 object-cover rounded hidden" />
                 @error('photo') <div class="text-red-600 text-sm">{{ $message }}</div>@enderror
             </div>
             <button class="bg-blue-600 text-white px-3 py-2 rounded">Add Game</button>
@@ -113,7 +114,7 @@
                         <td>{{ $game->platform->name ?? 'N/A' }}</td>
                         <td>₱{{ number_format($game->price,2) }}</td>
                         <td class="text-right">
-                            <button class="mr-2 text-blue-600" onclick="openEdit({{ $game->id }}, '{{ addslashes($game->title) }}', {{ $game->release_year }}, '{{ $game->price }}', {{ $game->platform_id ?? 'null' }})">Edit</button>
+                            <button class="mr-2 text-blue-600" onclick="openEdit({{ $game->id }}, '{{ addslashes($game->title) }}', {{ $game->release_year }}, '{{ $game->price }}', {{ $game->platform_id ?? 'null' }}, {{ $game->photo ? "'".addslashes($game->photo)."'" : 'null' }})">Edit</button>
                             <form method="POST" action="{{ route('games.destroy', $game) }}" style="display:inline" onsubmit="return confirm('Delete this game?')">
                                 @csrf @method('DELETE')
                                 <button class="text-red-600">Delete</button>
@@ -161,7 +162,12 @@
 
             <div class="mb-4">
                 <label class="block text-sm">Replace Photo (JPG/PNG, ≤ 2MB)</label>
-                <input type="file" name="photo" accept="image/png,image/jpeg" class="w-full" />
+                <input id="e_photo_input" type="file" name="photo" accept="image/png,image/jpeg" class="w-full" onchange="previewEditImage(event)" />
+                <img id="e_preview" src="" alt="Current image" class="mt-2 w-24 h-24 object-cover rounded hidden" />
+                <label class="inline-flex items-center mt-2">
+                    <input id="e_remove_photo" type="checkbox" name="remove_photo" value="1" class="form-checkbox h-4 w-4 text-red-600" />
+                    <span class="ml-2 text-sm text-gray-700">Remove image</span>
+                </label>
             </div>
 
             <div class="flex justify-end gap-2">
@@ -173,15 +179,55 @@
 </div>
 
 <script>
-function openEdit(id,title,year,price,platform_id){
+function previewAddImage(event){
+    const file = event.target.files[0];
+    const img = document.getElementById('addPreview');
+    if(file){
+        img.src = URL.createObjectURL(file);
+        img.classList.remove('hidden');
+    } else {
+        img.src = '';
+        img.classList.add('hidden');
+    }
+}
+
+function openEdit(id, title, year, price, platform_id, photo){
     const modal = document.getElementById('editModal');
     modal.classList.remove('hidden');
-    document.getElementById('e_title').value = title;
-    document.getElementById('e_release_year').value = year;
-    document.getElementById('e_price').value = price;
+    document.getElementById('e_title').value = title || '';
+    document.getElementById('e_release_year').value = year || '';
+    document.getElementById('e_price').value = price || '';
     document.getElementById('e_platform_id').value = platform_id ?? '';
     document.getElementById('editForm').action = '/games/' + id;
+
+    // reset file input and remove checkbox
+    const preview = document.getElementById('e_preview');
+    const fileInput = document.getElementById('e_photo_input');
+    const removeCheckbox = document.getElementById('e_remove_photo');
+    fileInput.value = '';
+    removeCheckbox.checked = false;
+
+    if(photo){
+        preview.src = '/storage/' + photo;
+        preview.classList.remove('hidden');
+    } else {
+        preview.src = '';
+        preview.classList.add('hidden');
+    }
 }
+
+function previewEditImage(event){
+    const file = event.target.files[0];
+    const preview = document.getElementById('e_preview');
+    const removeCheckbox = document.getElementById('e_remove_photo');
+    if(file){
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('hidden');
+        // uncheck remove when selecting new file
+        removeCheckbox.checked = false;
+    }
+}
+
 function closeEdit(){
     const modal = document.getElementById('editModal');
     modal.classList.add('hidden');

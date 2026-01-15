@@ -62,10 +62,19 @@ class GameController extends Controller
             'price' => 'required|numeric',
             'platform_id' => 'nullable|exists:platforms,id',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'remove_photo' => 'nullable|boolean',
         ]);
 
+        // If user requested removal of existing photo
+        if ($request->filled('remove_photo') && $request->boolean('remove_photo')) {
+            if ($game->photo && Storage::disk('public')->exists($game->photo)) {
+                Storage::disk('public')->delete($game->photo);
+            }
+            $data['photo'] = null;
+        }
+
+        // If a new photo was uploaded, delete old and store new
         if ($request->hasFile('photo')) {
-            // delete old photo if exists
             if ($game->photo && Storage::disk('public')->exists($game->photo)) {
                 Storage::disk('public')->delete($game->photo);
             }
